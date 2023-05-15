@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"crypto/tls"
@@ -17,12 +16,6 @@ type Redis struct {
 }
 
 func Init() *Redis {
-	pflag.String("redis_host", "127.0.0.1:6379", "Redis server address")
-	pflag.String("redis_username", "", "Redis username")
-	pflag.String("redis_password", "", "Redis password")
-	pflag.Int("redis_db", 0, "Redis DB id")
-	pflag.Bool("redis_use_tls", false, "Use TLS or not")
-
 	ctx := context.Background()
 
 	var tlsConfig *tls.Config

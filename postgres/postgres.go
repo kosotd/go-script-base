@@ -3,9 +3,7 @@ package postgres
 import (
 	"context"
 	"log"
-	"time"
 
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"fmt"
@@ -21,12 +19,6 @@ type Postgres struct {
 }
 
 func Init() *Postgres {
-	pflag.String("postgres_uri", "postgres://root:1234@localhost:5432/nft_pipeline", "Postgres connection string")
-	pflag.Int("db_max_open_conns", 0, "db driver max open connections (0 - that is no limit on the number)")
-	pflag.Int("db_max_idle_conns", 2, "db driver max idle connections")
-	pflag.Duration("db_conn_max_lifetime", 5*time.Minute, "db driver connection max lifetime")
-	pflag.String("application_name", "application", "application name")
-
 	ctx := context.Background()
 	postgresUri := viper.GetString("postgres_uri")
 
