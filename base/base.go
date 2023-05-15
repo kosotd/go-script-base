@@ -1,4 +1,4 @@
-package goscriptbase
+package base
 
 import (
 	"context"
@@ -14,15 +14,13 @@ type Handler interface {
 	Handle(ctx context.Context) error
 }
 
-func init() {
+func Run(handler Handler) error {
 	pflag.Duration("sleep_interval", 0, "sleep interval")
 
 	pflag.Parse()
 	_ = viper.BindPFlags(pflag.CommandLine)
 	viper.AutomaticEnv()
-}
 
-func Run(handler Handler) error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
