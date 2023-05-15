@@ -40,13 +40,36 @@ func Run(handler Handler) error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
-	ticker := time.NewTicker(viper.GetDuration("sleep_interval"))
-	defer ticker.Stop()
+	if viper.GetDuration("sleep_interval") <= 0 {
+		cycle(ctx, handler)
+	} else {
+		ticker := time.NewTicker(viper.GetDuration("sleep_interval"))
+		defer ticker.Stop()
 
-	if err := handler.Handle(ctx); err != nil {
-		return err
+		if err := handler.Handle(ctx); err != nil {
+			return err
+		}
+
+		cycleTicker(ctx, ticker, handler)
 	}
 
+	return nil
+}
+
+func cycle(ctx context.Context, handler Handler) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			if err := handler.Handle(ctx); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+func cycleTicker(ctx context.Context, ticker *time.Ticker, handler Handler) error {
 	for {
 		select {
 		case <-ctx.Done():
