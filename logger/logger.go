@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func init() {
+func Init() {
 	pflag.String("log_level", "INFO", "log level")
 
 	level, err := logrus.ParseLevel(viper.GetString("log_level"))
@@ -17,4 +17,8 @@ func init() {
 	}
 	logrus.SetLevel(level)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+}
+
+func Instance() *logrus.Logger {
+	return logrus.StandardLogger()
 }

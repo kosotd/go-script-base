@@ -13,12 +13,10 @@ import (
 )
 
 type Redis struct {
-	RDB *redis.Client
+	rdb *redis.Client
 }
 
-var RDB *redis.Client
-
-func init() {
+func Init() *Redis {
 	pflag.String("redis_host", "127.0.0.1:6379", "Redis server address")
 	pflag.String("redis_username", "", "Redis username")
 	pflag.String("redis_password", "", "Redis password")
@@ -34,7 +32,7 @@ func init() {
 		}
 	}
 
-	RDB = redis.NewClient(&redis.Options{
+	rdb := redis.NewClient(&redis.Options{
 		Addr:      viper.GetString("redis_host"),
 		Username:  viper.GetString("redis_username"),
 		Password:  viper.GetString("redis_password"),
@@ -42,11 +40,17 @@ func init() {
 		TLSConfig: tlsConfig,
 	})
 
-	if err := RDB.Ping(ctx).Err(); err != nil {
+	if err := rdb.Ping(ctx).Err(); err != nil {
 		log.Fatal(err)
 	}
+
+	return &Redis{rdb: rdb}
 }
 
-func Close() {
-	RDB.Close()
+func (r *Redis) Close() {
+	defer r.rdb.Close()
+}
+
+func (r *Redis) Instance() *redis.Client {
+	return r.rdb
 }

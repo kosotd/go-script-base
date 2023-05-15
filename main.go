@@ -6,8 +6,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/kosotd/go-script-base/postgres"
-	"github.com/kosotd/go-script-base/redis"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -17,7 +15,7 @@ type Handler interface {
 }
 
 func init() {
-	pflag.Duration("sleep_interval", time.Second*5, "sleep interval")
+	pflag.Duration("sleep_interval", 0, "sleep interval")
 
 	pflag.Parse()
 	_ = viper.BindPFlags(pflag.CommandLine)
@@ -30,14 +28,6 @@ func Run(handler Handler) error {
 
 	ticker := time.NewTicker(viper.GetDuration("sleep_interval"))
 	defer ticker.Stop()
-
-	if postgres.DB != nil && postgres.Pool != nil {
-		ctx = context.WithValue(ctx, "postgres", postgres.Postgres{DB: postgres.DB, Pool: postgres.Pool})
-	}
-
-	if redis.RDB != nil {
-		ctx = context.WithValue(ctx, "redis", redis.Redis{RDB: redis.RDB})
-	}
 
 	if err := handler.Handle(ctx); err != nil {
 		return err

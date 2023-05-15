@@ -16,14 +16,11 @@ import (
 )
 
 type Postgres struct {
-	DB   *sqlx.DB
-	Pool *pgxpool.Pool
+	db   *sqlx.DB
+	pool *pgxpool.Pool
 }
 
-var DB *sqlx.DB
-var Pool *pgxpool.Pool
-
-func init() {
+func Init() *Postgres {
 	pflag.String("postgres_uri", "postgres://root:1234@localhost:5432/nft_pipeline", "Postgres connection string")
 	pflag.Int("db_max_open_conns", 0, "db driver max open connections (0 - that is no limit on the number)")
 	pflag.Int("db_max_idle_conns", 2, "db driver max idle connections")
@@ -32,32 +29,37 @@ func init() {
 
 	ctx := context.Background()
 	postgresUri := viper.GetString("postgres_uri")
-	var err error
 
-	DB, err = sqlx.ConnectContext(ctx, "pgx", postgresUri)
+	db, err := sqlx.ConnectContext(ctx, "pgx", postgresUri)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	Pool, err = pgxpool.New(ctx, postgresUri)
+	pool, err := pgxpool.New(ctx, postgresUri)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	DB.SetMaxOpenConns(viper.GetInt("db_max_open_conns"))
-	DB.SetMaxIdleConns(viper.GetInt("db_max_idle_conns"))
-	DB.SetConnMaxLifetime(viper.GetDuration("db_conn_max_lifetime"))
+	db.SetMaxOpenConns(viper.GetInt("db_max_open_conns"))
+	db.SetMaxIdleConns(viper.GetInt("db_max_idle_conns"))
+	db.SetConnMaxLifetime(viper.GetDuration("db_conn_max_lifetime"))
 
-	if err := DB.Ping(); err != nil {
+	if err := db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
-	if _, err := DB.Exec(fmt.Sprintf("SET application_name = '%s'", viper.GetString("application_name"))); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("SET application_name = '%s'", viper.GetString("application_name"))); err != nil {
 		log.Fatal(err)
 	}
+
+	return &Postgres{db: db, pool: pool}
 }
 
-func Close() {
-	DB.Close()
-	Pool.Close()
+func (p *Postgres) Close() {
+	defer p.db.Close()
+	defer p.pool.Close()
+}
+
+func (p *Postgres) Instance() (*sqlx.DB, *pgxpool.Pool) {
+	return p.db, p.pool
 }
