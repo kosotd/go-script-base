@@ -41,7 +41,9 @@ func Run(handler Handler) error {
 	defer cancel()
 
 	if viper.GetDuration("sleep_interval") <= 0 {
-		cycle(ctx, handler)
+		if err := cycle(ctx, handler); err != nil {
+			return err
+		}
 	} else {
 		ticker := time.NewTicker(viper.GetDuration("sleep_interval"))
 		defer ticker.Stop()
@@ -50,7 +52,9 @@ func Run(handler Handler) error {
 			return err
 		}
 
-		cycleTicker(ctx, ticker, handler)
+		if err := cycleTicker(ctx, ticker, handler); err != nil {
+			return err
+		}
 	}
 
 	return nil
