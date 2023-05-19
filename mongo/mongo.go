@@ -14,7 +14,7 @@ type Mongo struct {
 	db *mongo.Client
 }
 
-func Init() *mongo.Client {
+func Init() *Mongo {
 	opts := options.Client()
 	opts = opts.ApplyURI(viper.GetString("mongo_uri"))
 	opts = opts.SetMaxPoolSize(viper.GetUint64("mongo_max_pool_size"))
@@ -34,7 +34,7 @@ func Init() *mongo.Client {
 		log.Fatal(err)
 	}
 
-	return client
+	return &Mongo{db: client}
 }
 
 func (r *Mongo) Close() {
