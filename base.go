@@ -27,6 +27,9 @@ func init() {
 
 	pflag.Duration("sleep_interval", 0, "sleep interval")
 
+	pflag.String("mongo_uri", "mongo://localhost:27017", "MongoDB url")
+	pflag.Uint64("mongo_max_pool_size", 300, "MongoDB max pool size")
+
 	pflag.Parse()
 	_ = viper.BindPFlags(pflag.CommandLine)
 	viper.AutomaticEnv()
